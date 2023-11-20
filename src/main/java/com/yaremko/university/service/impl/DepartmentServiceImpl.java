@@ -1,16 +1,14 @@
 package com.yaremko.university.service.impl;
 
-import com.yaremko.university.model.Degree;
-import com.yaremko.university.model.Department;
-import com.yaremko.university.model.Lector;
+import com.yaremko.university.model.Statistics;
 import com.yaremko.university.repository.DepartmentRepository;
 import com.yaremko.university.service.DepartmentService;
+import jakarta.transaction.Transactional;
 import org.springframework.stereotype.Service;
 
 import java.text.DecimalFormat;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 public class DepartmentServiceImpl implements DepartmentService {
@@ -23,69 +21,51 @@ public class DepartmentServiceImpl implements DepartmentService {
 
     @Override
     public String getHeadOfDepartment(String name) {
-        StringBuilder answer = new StringBuilder("Answer: Head of ").append(name).append(" department is ");
-        Optional<Department> department = departmentRepository.findByName(name);
-        if (department.isPresent()) {
-            answer.append(department.get().getHead().getName());
-        } else {
-            return "There is no such department as " + name;
-        }
-        return answer.toString();
+        return departmentRepository.findByName(name)
+                .filter(it -> Objects.nonNull(it.getHead()))
+                .map(it -> "Answer: Head of " + name + " department is " + it.getHead().getName())
+                .orElse("There is no such department as " + name);
     }
 
     @Override
     public String getDepartmentStatistics(String name) {
-        StringBuilder answer = new StringBuilder("Answer: assistans - ");
-        Optional<Department> department = departmentRepository.findByName(name);
-        List<Lector> lectors;
-        if (department.isPresent()) {
-            lectors = department.get().getLectors();
-        } else {
+        List<Statistics> statistics = departmentRepository.departmentStatistics(name);
+        if (statistics.isEmpty()) {
             return "There is no such department as " + name;
         }
-        answer.append(lectors
-                .stream()
-                .filter(lector -> lector.getDegree().equals(Degree.ASSISTANT))
-                .count()
-        );
-        answer.append("\nassociate professors - ");
-        answer.append(lectors
-                .stream()
-                .filter(lector -> lector.getDegree().equals(Degree.ASSOCIATE_PROFESSOR))
-                .count()
-        );
-        answer.append("\nprofessors - ");
-        answer.append(lectors
-                .stream()
-                .filter(lector -> lector.getDegree().equals(Degree.PROFESSOR))
-                .count()
-        );
-        return answer.toString();
+        return printStatistics(statistics);
     }
 
     @Override
     public String calculateAverageSalaryOfDepartment(String name) {
-        StringBuilder answer = new StringBuilder("Answer: The average salary of ").append(name).append(" is ");
-        Optional<Department> department = departmentRepository.findByName(name);
-        List<Double> salaries;
-        if (department.isPresent()) {
-            salaries = department.get().getLectors()
-                    .stream()
-                    .map(Lector::getSalary)
-                    .collect(Collectors.toList());
-        } else {
+        Double avgSalary = departmentRepository.averageDepartmentSalary(name);
+        if (Objects.isNull(avgSalary)) {
             return "There is no such department as " + name;
         }
-        double averageSalary = salaries.stream().reduce(0.00, Double::sum) / (double) salaries.size();
-        answer.append(new DecimalFormat("##.##").format(averageSalary));
-        return answer.toString();
+        String result = "Answer: The average salary of " + name + " is ";
+        return result + new DecimalFormat("##.##").format(avgSalary);
     }
 
     @Override
+    // Thanks to @Transactional session will remain open until the method end.
+    // So it gives opportunity to load and get lectors list
+    @Transactional
     public String countEmployeeNumberForDepartment(String name) {
-        Optional<Department> department = departmentRepository.findByName(name);
-        return department
-                .map(value -> "Answer: " + value.getLectors().size())
+        return departmentRepository.findByName(name)
+                .filter(d -> Objects.nonNull(d.getLectors()))
+                .map(d -> "Answer: " + d.getLectors().size())
                 .orElseGet(() -> "There is no such department as " + name);
+    }
+
+    private String printStatistics(List<Statistics> statistics) {
+        StringBuilder result = new StringBuilder("Answer: ");
+        for (Statistics st : statistics) {
+            result
+                    .append(System.lineSeparator())
+                    .append(st.getDegree().getDegree())
+                    .append("s - ")
+                    .append(st.getQuantity());
+        }
+        return result.toString();
     }
 }

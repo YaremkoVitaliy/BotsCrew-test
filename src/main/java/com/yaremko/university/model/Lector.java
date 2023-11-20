@@ -1,10 +1,8 @@
 package com.yaremko.university.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Data
@@ -25,10 +23,9 @@ public class Lector {
 
     private Double salary;
 
-    @ManyToMany(fetch = FetchType.EAGER, mappedBy = "lectors")
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "lectors")
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    @JsonIgnore
     private List<Department> departments;
 
 }

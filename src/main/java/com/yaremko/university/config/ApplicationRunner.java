@@ -35,10 +35,13 @@ public class ApplicationRunner implements CommandLineRunner {
                 System.out.println(departmentService.getHeadOfDepartment(departmentName));
             } else if (userInput.startsWith(UserInput.DEPARTMENT_STATISTICS_START.getInput())
                     && userInput.endsWith(UserInput.DEPARTMENT_STATISTICS_END.getInput())) {
-                departmentName = userInput.substring(
-                        UserInput.DEPARTMENT_STATISTICS_START.getInput().length(),
-                        userInput.length() - UserInput.DEPARTMENT_STATISTICS_END.getInput().length()
-                );
+                departmentName = userInput.replaceFirst(
+                                UserInput.DEPARTMENT_STATISTICS_START.getInput(),
+                                "")
+                        .replace(
+                                UserInput.DEPARTMENT_STATISTICS_END.getInput(),
+                                ""
+                        );
                 System.out.println(departmentService.getDepartmentStatistics(departmentName));
             } else if (userInput.startsWith(UserInput.DEPARTMENT_AVERAGE_SALARY.getInput())) {
                 departmentName = userInput.replaceFirst(

@@ -1,5 +1,8 @@
 package com.yaremko.university.model;
 
+import lombok.Getter;
+
+@Getter
 public enum Degree {
 
     ASSISTANT("assistant"),
@@ -12,7 +15,4 @@ public enum Degree {
         this.degree = degree;
     }
 
-    public String getDegree() {
-        return degree;
-    }
 }

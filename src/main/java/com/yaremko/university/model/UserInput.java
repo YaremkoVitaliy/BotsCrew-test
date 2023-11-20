@@ -1,5 +1,8 @@
 package com.yaremko.university.model;
 
+import lombok.Getter;
+
+@Getter
 public enum UserInput {
 
     DEPARTMENT_HEAD("Who is head of department "),
@@ -13,10 +16,6 @@ public enum UserInput {
 
     UserInput(String input) {
         this.input = input;
-    }
-
-    public String getInput() {
-        return input;
     }
 
     public static void printListOfUserInputs() {

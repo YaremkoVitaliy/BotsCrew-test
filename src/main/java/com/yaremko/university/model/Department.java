@@ -1,6 +1,5 @@
 package com.yaremko.university.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,16 +20,15 @@ public class Department {
     @Column(unique = true)
     private String name;
 
-    @OneToOne(cascade = CascadeType.REMOVE)
+    @OneToOne(cascade = CascadeType.REFRESH)
     @JoinColumn(name = "head", referencedColumnName = "name")
     private Lector head;
 
-    @ManyToMany(fetch = FetchType.EAGER)
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "department_lector",
             joinColumns = @JoinColumn(name = "department_id"),
             inverseJoinColumns = @JoinColumn(name = "lector_id")
     )
-    @JsonIgnore
     private List<Lector> lectors;
 }
